@@ -27,7 +27,7 @@ runs:
       shell: bash
 
     - run: |
-        sed 's/ \+/\t/' <<EOF |
+        sed 's/ \+/\t/;/^$/d' <<EOF |
         ${{ inputs.tagsAndFiles }}
         EOF
         while IFS=$'\t' read -r tagPrefix path; do
