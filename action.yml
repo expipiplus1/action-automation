@@ -31,16 +31,20 @@ runs:
     shell: bash
 
   - run: |
-      sed 's/ \+/\t/;/^$/d' <<EOF |
-      ${{ inputs.tagsAndFiles }}
-      EOF
+      sed 's/ \+/\t/;/^$/d' <<< "$INPUT_TAGSANDFILES" |
       while IFS=$'\t' read -r tagPrefix path; do
         ${{ github.action_path }}/tag-latest-release.sh --package "$path" --tag-prefix "$tagPrefix"
       done
     shell: bash
+    env:
+      INPUT_TAGSANDFILES: ${{ inputs.tagsAndFiles }}
 
   - run: |
-      repo="https://${{ inputs.token }}@github.com/${GITHUB_REPOSITORY}.git"
-      git push "$repo" --tags
-    if: inputs.pushTags == 'true'
+      if [ "$INPUT_PUSHTAGS" = true ]; then
+        repo="https://${INPUT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        git push "$repo" --tags
+      fi
     shell: bash
+    env:
+      INPUT_TOKEN: ${{ inputs.token }}
+      INPUT_PUSHTAGS: ${{ inputs.pushTags }}
