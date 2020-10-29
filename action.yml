@@ -1,0 +1,37 @@
+name: 'Tag Latest Release'
+
+description: |
+  Pushes a tag for commits on master which change the 'version' field in the
+  specified files
+
+inputs:
+  tagsAndFiles:
+    description: |
+      A string which on each line has a tag prefix and a path to a yaml or json
+      file with a 'version' field separated by spaces.
+    required: false
+    default: |
+      v package.yaml
+
+  pushTags:
+    description: |
+      Push the tags as well as just create them
+    required: false
+    default: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        sudo pip3 install yq
+      shell: bash
+
+    - run: |
+        sed 's/ \+/\t/' <<EOF |
+        ${{ inputs.tagsAndFiles }}
+        EOF
+        while IFS=$'\t' read -r tagPrefix path; do
+          ${{ github.action_path }}/tag-latest-release.sh --package "$path" --tag-prefix "$tagPrefix"
+        done
+        git push --tags
+      shell: bash
