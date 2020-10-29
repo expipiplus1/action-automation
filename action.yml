@@ -43,3 +43,4 @@ runs:
       repo="https://${{ inputs.token }}@github.com/${GITHUB_REPOSITORY}.git"
       git push "$repo" --tags
     if: inputs.pushTags == 'true'
+    shell: bash
