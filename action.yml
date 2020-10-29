@@ -1,4 +1,4 @@
-name: 'Tag Latest Release'
+name: Tag Latest Release
 
 description: |
   Pushes a tag for commits on master which change the 'version' field in the
@@ -19,19 +19,27 @@ inputs:
     required: false
     default: true
 
-runs:
-  using: "composite"
-  steps:
-    - run: |
-        sudo pip3 install yq
-      shell: bash
+  token:
+    description: GITHUB_TOKEN or a `repo` scoped Personal Access Token (PAT)
+    default: ${{ github.token }}
 
-    - run: |
-        sed 's/ \+/\t/;/^$/d' <<EOF |
-        ${{ inputs.tagsAndFiles }}
-        EOF
-        while IFS=$'\t' read -r tagPrefix path; do
-          ${{ github.action_path }}/tag-latest-release.sh --package "$path" --tag-prefix "$tagPrefix"
-        done
-        git push --tags
-      shell: bash
+runs:
+  using: composite
+  steps:
+  - run: |
+      sudo pip3 install yq
+    shell: bash
+
+  - run: |
+      sed 's/ \+/\t/;/^$/d' <<EOF |
+      ${{ inputs.tagsAndFiles }}
+      EOF
+      while IFS=$'\t' read -r tagPrefix path; do
+        ${{ github.action_path }}/tag-latest-release.sh --package "$path" --tag-prefix "$tagPrefix"
+      done
+    shell: bash
+
+  - run: |
+      repo="https://${{ inputs.token }}@github.com/${GITHUB_REPOSITORY}.git"
+      git push "$repo" --tags
+    if: inputs.pushTags == 'true'
