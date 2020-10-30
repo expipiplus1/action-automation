@@ -85,15 +85,18 @@ main = do
       exitFailure
 
   let version' = if null version then [(Nothing, Minor)] else version
-  updates <- for version' $ \case
-    (Nothing, b) ->
-      (, fromMaybe "v" tagPrefix, b) <$> makeAbsolute (fromMaybe "." packageDir)
+      order    = zip [ n | PackageInfo n _ _ <- concat packageInfo ] [0 ..]
+  updates <- fmap (sortOn (\(x, _, _, _) -> x)) . for version' $ \case
+    (Nothing, b) -> (Nothing, , fromMaybe "v" tagPrefix, b)
+      <$> makeAbsolute (fromMaybe "." packageDir)
     (Just n, b) -> case find ((== n) . packageInfoName) (concat packageInfo) of
-      Just (PackageInfo _ tag dir) -> (, tag, b) <$> makeAbsolute dir
+      Just (PackageInfo _ tag dir) ->
+        let priority = lookup n order
+        in  (priority, , tag, b) <$> makeAbsolute dir
       Nothing ->
         die $ "Package " <> n <> " was not specified in --package-info"
 
-  for_ updates $ \(packageDir, _, _) -> do
+  for_ updates $ \(_, packageDir, _, _) -> do
     let git' :: Cmd
         git' = git "-C" packageDir
 
@@ -104,7 +107,7 @@ main = do
         die
           "There are untracked changes in the working tree, please resolve these before making a release"
 
-  commits <- for updates $ \(packageDir, tagPrefix, bump) -> do
+  commits <- for updates $ \(_, packageDir, tagPrefix, bump) -> do
     let package   = packageDir </> "package.yaml"
         changelog = packageDir </> "changelog.md"
 
