@@ -152,7 +152,7 @@ main = do
               (header <>)
                 <$> captureString
                 <|  sed "/^##/d"
-                <|  awk "/## WIP/{flag=0;next};/##/{flag=flag+1};flag==1"
+                <|  awk "/## WIP/{flag=1;next};/##/{flag=flag+1};flag==1"
                 <|  cat changelog
             False -> pure header
 
