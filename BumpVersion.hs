@@ -26,13 +26,21 @@ import           Data.ByteString.Lazy.UTF8      ( fromString
                                                 )
 import           Data.Char                      ( toLower )
 import           Data.Foldable                  ( for_ )
+import           Data.Function                  ( on )
+import           Data.List                      ( find
+                                                , groupBy
+                                                , sortOn
+                                                )
 import           Data.Maybe
+import           Data.Traversable               ( for )
 import           Data.Version
 import           GHC.Generics
 import           Options.Applicative
 import           Options.Generic
 import           Shh
-import           System.Directory               ( doesFileExist )
+import           System.Directory               ( doesFileExist
+                                                , makeAbsolute
+                                                )
 import           System.Exit                    ( exitFailure
                                                 , exitSuccess
                                                 )
@@ -43,12 +51,6 @@ import           System.IO
 import           Text.ParserCombinators.ReadP   ( eof
                                                 , readP_to_S
                                                 )
-import           Data.Traversable               ( for )
-import           Data.List                      ( sortOn
-                                                , groupBy
-                                                , find
-                                                )
-import           Data.Function                  ( on )
 
 load SearchPath ["git", "yq", "cat", "sed", "date", "hpack", "awk"]
 
@@ -84,11 +86,12 @@ main = do
 
   let version' = if null version then [(Nothing, Minor)] else version
   updates <- for version' $ \case
-    (Nothing, b) -> pure (fromMaybe "." packageDir, fromMaybe "v" tagPrefix, b)
-    (Just n , b) -> case find ((== n) . packageInfoName) (concat packageInfo) of
+    (Nothing, b) ->
+      (, fromMaybe "v" tagPrefix, b) <$> makeAbsolute (fromMaybe "." packageDir)
+    (Just n, b) -> case find ((== n) . packageInfoName) (concat packageInfo) of
+      Just (PackageInfo _ tag dir) -> (, tag, b) <$> makeAbsolute dir
       Nothing ->
         die $ "Package " <> n <> " was not specified in --package-info"
-      Just (PackageInfo _ tag dir) -> pure (dir, tag, b)
 
   for_ updates $ \(packageDir, _, _) -> do
     let git' :: Cmd
