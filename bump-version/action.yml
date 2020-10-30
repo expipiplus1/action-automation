@@ -16,10 +16,6 @@ inputs:
       JSON description of versions for packages
     required: true
 
-  token:
-    description: GITHUB_TOKEN or a `repo` scoped Personal Access Token (PAT)
-    default: ${{ github.token }}
-
 runs:
   using: composite
   steps:
