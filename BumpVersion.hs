@@ -194,8 +194,8 @@ main = do
     $ for_ (groupBy ((==) `on` fst) . sortOn fst $ commits)
     $ \xs ->
         let (root : _, messages) = unzip xs
-        in  git "-C" root "commit" "--file" "-"
-              <<< fromString (unlines messages)
+        in  git "-C" root "commit" "--file" "-" <<< fromString
+              (unlines . zipWith ($) (id : repeat ("\n## " <>)) $ messages)
 
 ----------------------------------------------------------------
 -- Utils
