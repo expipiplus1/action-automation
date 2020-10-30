@@ -90,10 +90,7 @@ main = do
         die $ "Package " <> n <> " was not specified in --package-info"
       Just (PackageInfo _ tag dir) -> pure (dir, tag, b)
 
-  commits <- for updates $ \(packageDir, tagPrefix, bump) -> do
-    let package   = packageDir </> "package.yaml"
-        changelog = packageDir </> "changelog.md"
-
+  for_ updates $ \(packageDir, _, _) -> do
     let git' :: Cmd
         git' = git "-C" packageDir
 
@@ -103,6 +100,13 @@ main = do
       unless (null changedFiles) $ do
         die
           "There are untracked changes in the working tree, please resolve these before making a release"
+
+  commits <- for updates $ \(packageDir, tagPrefix, bump) -> do
+    let package   = packageDir </> "package.yaml"
+        changelog = packageDir </> "changelog.md"
+
+    let git' :: Cmd
+        git' = git "-C" packageDir
 
     name       <- captureString <| yq "--raw-output" ".name" <| cat package
     oldVersion <-
