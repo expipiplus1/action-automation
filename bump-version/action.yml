@@ -1,0 +1,41 @@
+name: Bump version in haskell packages
+
+description: |
+  Bumps Haskell package.yaml and changelog.md files.
+  hpack must be installed.
+
+inputs:
+  packageInfos:
+    description: |
+      Description of packages which can be updated.
+      Each line being: name tag-prefix directory
+    required: true
+
+  packageVersions:
+    description: |
+      JSON description of versions for packages
+    required: true
+
+  token:
+    description: GITHUB_TOKEN or a `repo` scoped Personal Access Token (PAT)
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+  - name: Init Git
+    run: |
+      git config --global user.name 'actions-bot'
+      git config --global user.email '58130806+actions-bot@users.noreply.github.com'
+    shell: bash
+
+  - run: |
+      versions=$(jq --raw-output \
+        'to_entries|map("--version \(.key):\(.value|tostring)")|.[]' \
+        <<<$NAMED_ARGS
+        )
+      ./BumpVersion.hs --package-info "$INPUT_PACKAGEINFOS" "$versions"
+    env:
+      NAMED_ARGS: ${{ inputs.packageVersions }}
+      INPUT_PACKAGEINFOS: ${{ inputs.packageInfos }}
+    shell: bash
