@@ -30,7 +30,7 @@ runs:
         'to_entries|map("--version \(.key):\(.value|tostring)")|.[]' \
         <<<$NAMED_ARGS
         )
-      ./BumpVersion.hs --package-info "$INPUT_PACKAGEINFOS" "$versions"
+      ${{ github.action_path }}/../BumpVersion.hs --package-info "$INPUT_PACKAGEINFOS" "$versions"
     env:
       NAMED_ARGS: ${{ inputs.packageVersions }}
       INPUT_PACKAGEINFOS: ${{ inputs.packageInfos }}
