@@ -33,7 +33,7 @@ runs:
   - run: |
       sed 's/ \+/\t/;/^$/d' <<< "$INPUT_TAGSANDFILES" |
       while IFS=$'\t' read -r tagPrefix path; do
-        ${{ github.action_path }}/../tag-latest-release.sh --package "$path" --tag-prefix "$tagPrefix"
+        ${{ github.action_path }}/../TagLatestRelease.hs --package "$path" --tag-prefix "$tagPrefix"
       done
     shell: bash
     env:
