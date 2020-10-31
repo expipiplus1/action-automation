@@ -19,10 +19,6 @@ inputs:
     required: false
     default: true
 
-  token:
-    description: GITHUB_TOKEN or a `repo` scoped Personal Access Token (PAT)
-    default: ${{ github.token }}
-
 runs:
   using: composite
   steps:
@@ -41,10 +37,8 @@ runs:
 
   - run: |
       if [ "$INPUT_PUSHTAGS" = true ]; then
-        repo="https://${INPUT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-        git push "$repo" --tags
+        git push --tags
       fi
     shell: bash
     env:
-      INPUT_TOKEN: ${{ inputs.token }}
       INPUT_PUSHTAGS: ${{ inputs.pushTags }}
