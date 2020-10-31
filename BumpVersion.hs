@@ -165,7 +165,7 @@ main = do
 
     sed "-i.bak"
         "-r"
-        ("s/^(version: *).*/\\1" <> showVersion newVersion <> "/")
+        ("s/^(version: *).*/\\1" <> show (showVersion newVersion) <> "/")
         package
     git' "add" package
 
