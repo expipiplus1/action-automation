@@ -136,3 +136,22 @@ jobs:
 This will allow one to comment, for example, `/bump first=major third=minor` on
 a pull request to add a commit which bumps the package in directory `.` a major
 version and the package in `third/` by a minor version.
+
+-----------
+
+## Setup instructions:
+
+- Either create a PAT and use that with slash command dispatch, or for more
+  restricted permissions use a GitHub app. and `tibdex/github-app-token` to
+  disptach slash commands. I use
+  https://github.com/settings/apps/threeoftwelve/installations
+
+- Create a deploy key for the repo:
+  `ssh-keygen -t ed25519 -f exact-real-deploy -C github.deploy@monoid.al`
+  https://github.com/expipiplus1/exact-real/settings/keys
+
+- Add the deploy private key to secrets
+
+- Add `bump-command.yml` and set up the `packageInfos` argument.
+
+- Add `tag-release.yml` and optionally set up the `tagsAndFiles` argument
