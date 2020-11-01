@@ -26,14 +26,19 @@ module BumpVersion
   ) where
 
 import qualified Control.Category              as C
-import           Control.Monad                  ( unless
+import           Control.Monad                  ( guard
+                                                , unless
                                                 , when
                                                 )
+import           Control.Monad.IO.Class         ( MonadIO(liftIO) )
+import           Control.Monad.Trans.Maybe      ( MaybeT(runMaybeT) )
 import           Data.ByteString.Lazy.UTF8      ( fromString
                                                 , toString
                                                 )
 import           Data.Char                      ( toLower )
-import           Data.Foldable                  ( for_ )
+import           Data.Foldable                  ( asum
+                                                , for_
+                                                )
 import           Data.Function                  ( on )
 import           Data.List                      ( find
                                                 , groupBy
@@ -116,8 +121,15 @@ main = do
           "There are untracked changes in the working tree, please resolve these before making a release"
 
   commits <- for updates $ \(_, packageDir, tagPrefix, bump) -> do
-    let package   = packageDir </> "package.yaml"
-        changelog = packageDir </> "changelog.md"
+    let package = packageDir </> "package.yaml"
+        changelogCandidates =
+          [packageDir </> "changelog.md", packageDir </> "CHANGELOG.md"]
+
+    changelog <-
+      runMaybeT
+      . asum
+      . fmap (\c -> c <$ (guard =<< liftIO (doesFileExist c)))
+      $ changelogCandidates
 
     let git' :: Cmd
         git' = git "-C" packageDir
@@ -155,14 +167,14 @@ main = do
     let tag = tagPrefix <> showVersion newVersion
     commitMessage <-
       let header = tag <> "\n\n"
-      in  doesFileExist changelog >>= \case
-            True ->
+      in  case changelog of
+            Just c ->
               (header <>)
                 <$> captureString
                 <|  sed "/^##/d"
                 <|  awk "/## WIP/{flag=1;next};/##/{flag=flag+1};flag==1"
-                <|  cat changelog
-            False -> pure header
+                <|  cat c
+            Nothing -> pure header
 
     when dryRun $ do
       sayErr "Not making any changes due to dry-run"
@@ -177,8 +189,8 @@ main = do
         package
     git' "add" package
 
-    doesFileExist changelog >>= \case
-      True -> do
+    case changelog of
+      Just c -> do
         d <- captureString <| date "--iso-8601"
         sed
           "-i.bak"
@@ -188,9 +200,13 @@ main = do
           <> d
           <> "/"
           )
-          changelog
-        git' "add" changelog
-      False -> sayErr $ changelog <> " not found, not updating"
+          c
+        git' "add" c
+      Nothing ->
+        sayErr
+          $  "None of "
+          <> show changelogCandidates
+          <> " found, not updating changelog"
 
     hpack packageDir
     git' "add" (packageDir </> name <.> "cabal")
