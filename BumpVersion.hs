@@ -1,5 +1,13 @@
-#! /usr/bin/env nix-shell
-#! nix-shell --pure -i runghc -p haskellPackages.hpack jq yq git "haskellPackages.ghcWithPackages (hp: with hp; [ shh optparse-generic ])"
+#! /usr/bin/env bash
+{- 2>/dev/null
+# Use some stupid polyglot here so that we can use shell.nix from this #
+# directory and not the caller's directory.
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+exec nix-shell \
+  "$DIR/shell.nix" \
+  --pure \
+  --run "runghc $(printf "%q " "$0" "$@")"
+-}
 
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE DataKinds #-}

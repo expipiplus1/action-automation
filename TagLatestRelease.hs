@@ -4,9 +4,8 @@
 # as an include path to GHC.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 exec nix-shell \
+  "$DIR/shell.nix" \
   --pure \
-  -p haskellPackages.hpack jq yq git \
-     "haskellPackages.ghcWithPackages (hp: with hp; [ shh optparse-generic ])" \
   --run "runghc -i$(printf "%q " "$DIR" "$0" "$@")"
 -}
 
