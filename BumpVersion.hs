@@ -1,5 +1,6 @@
 #! /usr/bin/env bash
 {- 2>/dev/null
+# vim: set ft=haskell
 # Use some stupid polyglot here so that we can use shell.nix from this #
 # directory and not the caller's directory.
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
