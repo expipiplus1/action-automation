@@ -36,7 +36,7 @@ jobs:
   update:
     runs-on: ubuntu-20.04
     steps:
-    - uses: cachix/install-nix-action@v11
+    - uses: cachix/install-nix-action@v12
       with:
         nix_path: nixpkgs=channel:nixos-unstable
     - uses: actions/checkout@v2
@@ -108,7 +108,7 @@ jobs:
   bump:
     runs-on: ubuntu-20.04
     steps:
-      - uses: cachix/install-nix-action@v11
+      - uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
