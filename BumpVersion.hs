@@ -83,10 +83,10 @@ data Opts w = Opts
   deriving Generic
 
 data Bump = Patch | Minor | Major | SuperMajor | Explicit Version
-  deriving Show
+  deriving (Read, Show)
 
 data PackageInfo = PackageInfo String String FilePath
-  deriving Show
+  deriving (Read, Show)
 
 main :: IO ()
 main = do
