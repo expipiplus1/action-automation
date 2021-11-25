@@ -209,7 +209,7 @@ main = do
           <> show changelogCandidates
           <> " found, not updating changelog"
 
-    hpack packageDir
+    hpack "--force" packageDir
     git' "add" (packageDir </> name <.> "cabal")
 
     gitRoot <- captureString <| git' "rev-parse" "--show-toplevel"
