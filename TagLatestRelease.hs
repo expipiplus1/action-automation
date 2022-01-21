@@ -34,6 +34,7 @@ import           Data.ByteString.Lazy.UTF8      ( toString )
 import           Data.Foldable                  ( for_
                                                 , toList
                                                 )
+import           Data.List                      ( isSuffixOf )
 import           Data.Maybe
 import           Data.Version
 import           GHC.Generics
@@ -49,7 +50,7 @@ import           Text.ParserCombinators.ReadP   ( eof
                                                 , readP_to_S
                                                 )
 
-load SearchPath ["git", "yq"]
+load SearchPath ["git", "grep", "yq"]
 
 data Opts w = Opts
   { tagPrefix :: w ::: Maybe String <?> "prefix for git tag, default \"v\""
@@ -91,11 +92,15 @@ main = do
     getVersion rev = do
       ver <-
         (  git "show" [i|$rev:$package'|]
-          |> yq "--exit-status" "--raw-output" ".version"
+          |> (if ".cabal" `isSuffixOf` package'
+               then grep "-Po" "^version:\\s*\\K([\\d.]+)$"
+               else yq "--exit-status" "--raw-output" ".version"
+             )
           |> captureString
           )
-          `catchFailure` \_ -> die
-                           [i|unable to get version from $package' (at $rev)|]
+          `catchFailure` \_ ->
+                           die
+                             [i|unable to get version from $package' (at $rev)|]
       maybe
         (die [i|version from $package' (at $rev) isn't a valid version: $ver|])
         pure

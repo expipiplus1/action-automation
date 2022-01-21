@@ -7,8 +7,8 @@ Probably useful for non-Haskell projects too.
 This should be run on pushes to the main branch.
 
 It will walk back along this branch and detect the commit which changed the
-`version` field in `package.yaml`. It will tag this commit as `v$version` and
-push the tags.
+`version` field in `package.yaml` (or a .cabal file). It will tag this commit
+as `v$version` and push the tags.
 
 It can be configured to look for several `package.yaml` files and to use
 different tag prefixes for each one with the `tagsAndFiles` option. This takes
@@ -43,7 +43,7 @@ jobs:
       with:
         fetch-depth: 0 # Fetch everything
         ssh-key: ${{ secrets.DEPLOY_KEY }}
-    - uses: expipiplus1/tag-latest-release/tag-latest-release@HEAD
+    - uses: expipiplus1/action-automation/tag-latest-release@HEAD
       with:
         tagsAndFiles: |
           v package.yaml
